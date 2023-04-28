@@ -17,8 +17,20 @@ shell_exec("sudo bash usage_hdd.sh");
 if ($_POST) {
 	//var_dump($_POST);
 
-	unset($alert_success);
-	unset($alert_error);
+	if (isset($alert_success)) unset($alert_success);
+	if (isset($alert_error)) unset($alert_error);
+
+	if($_FILES) {
+		shell_exec("sudo chmod o+w /home/" .  $_SESSION['user']['username'] . "/uploads/");
+
+		if (file_exists("/home/". $_SESSION['user']['username'] ."/uploads/" . $_FILES["file"]["name"])) {
+			$alert_error = "Le fichier existe déjà !";
+		}
+		else {
+			move_uploaded_file($_FILES["file"]["tmp_name"], "/home/" . $_SESSION['user']['username'] . "/uploads/" . $_FILES["file"]["name"]);
+			$alert_success = "Le fichier a été téléchargé avec succès !";
+	        }
+	}
 
 	if ($_SESSION['user']) {
 		$username = $_SESSION['user']['username'];
@@ -147,7 +159,7 @@ if (!$_SESSION['user']) {
 <?php } ?>
 
 <?php if ($alert_error) { ?>
-    <div class="alert alert-success text-center">
+    <div class="alert alert-danger text-center">
         <strong><?= $alert_error ?></strong>
     </div>
 <?php } ?>
@@ -219,6 +231,14 @@ if (!$_SESSION['user']) {
  	</div>
 </div>
 
+<h2>Envoyer un fichier</h2>
+<form method="POST" enctype="multipart/form-data">
+	<div class="mb-3">
+	  <input class="form-control" type="file" id="formFile" name="file">
+	</div>
+	<input type="submit" class="my-3 btn btn-primary" name="file" value="Envoyer">
+</form>
+
 <div class="border-top my-3">
 	<h2>Télécharger mes backups</h2>
 		<form method="post" id="form-backups">
@@ -226,6 +246,8 @@ if (!$_SESSION['user']) {
 			<input type="submit" class="my-3 btn btn-primary" name="backups-bdd" value="Backups de ma base de données">
 		</form>
 </div>
+
+<p class="read">Espace disque utilisé : <?= shell_exec("du -a -h /home/" . $_SESSION['user']['username'] ." | sort -hr | awk '{print $1}' | head -1"); ?></p>
 
 <div class="text-center">
         <h2>Dashboard</h2>
@@ -247,13 +269,6 @@ if (!$_SESSION['user']) {
 </div>
 
 <?php } ?>
-
-<pre>
-	<?php
-		echo shell_exec('du -a -h /var/www/bonnesmeufs | sort -hr');
-		echo shell_exec("pwd");
-	?>
-</pre>
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
