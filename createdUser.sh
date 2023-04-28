@@ -16,6 +16,9 @@ echo "$username:$password" | sudo chpasswd
 echo "Username: $username"
 echo "Your account has been created"
 
+echo `sudo mkdir /home/$username/uploads`
+echo `sudo mkdir /home/$username/backups`
+
 echo $config | sudo tee /etc/nginx/sites-available/$serveurName > /dev/null
 sudo cp -r /etc/nginx/sites-available/$serveurName /etc/nginx/sites-enabled
 echo "it's work"
